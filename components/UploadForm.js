@@ -1,12 +1,14 @@
 "use client";
 import { useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function UploadForm() {
   const fileInputRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isUploadSuccess, setIsUploadSuccess] = useState(false);
 
   // Handle file selection
   const handleFileChange = (e) => {
@@ -44,6 +46,9 @@ export default function UploadForm() {
 
       console.log(response);
       const signedUrl = await response.json();
+      if(response.status === 200) {
+        setIsUploadSuccess(true);
+      }
       setPreviewUrl(signedUrl); // Set preview to uploaded image URL
       console.log(previewUrl);
       alert("Image uploaded successfully!");
@@ -56,7 +61,7 @@ export default function UploadForm() {
   };
 
   return (
-    <div className="flex flex-col items-center p-6 bg-gray-100 rounded-lg shadow-md">
+    <div className="flex flex-col items-center p-6 border-1 border-black rounded-md">
       <input
         ref={fileInputRef}
         type="file"
@@ -80,14 +85,26 @@ export default function UploadForm() {
       <button
         onClick={handleUpload}
         disabled={isUploading || !selectedFile}
-        className={`px-4 py-2 text-white rounded-lg ${
+        className={`px-4 py-2 text-white rounded-lg font-mono ${
           isUploading || !selectedFile
-            ? "bg-blue-400 cursor-not-allowed"
+            ? "bg-blue-500 cursor-not-allowed"
             : "bg-green-500 hover:bg-green-700"
         }`}
       >
         {isUploading ? "Uploading..." : "Upload Image"}
       </button>
+      {
+        1 && (
+          <div className="px-4 py-2 text-white rounded-lg bg-green-400 hover:bg-green-500 mt-2">
+            <Link 
+            href="/details"
+            className="text-white- font-mono">
+            Identify Age and Era
+            </Link>
+           
+          </div>
+        )
+      }
     </div>
   );
 }
