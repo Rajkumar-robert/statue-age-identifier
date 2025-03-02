@@ -67,13 +67,12 @@ export default function UploadForm() {
       />
 
       {previewUrl && (
-        <div className="relative w-40 h-fit mb-4">
-          <img
+        <div className="relative w-64 h-86 mb-4">
+          <Image
             src={previewUrl}
             alt="Preview"
-            layout="fill"
-          
-            className="rounded-md"
+            className="w-full h-full object-cover rounded-md"
+            fill
           />
         </div>
       )}
