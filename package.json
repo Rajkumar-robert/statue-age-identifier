@@ -14,9 +14,12 @@
     "multer": "^1.4.5-lts.1",
     "next": "15.2.0",
     "next-auth": "^4.24.11",
+    "pinata": "^1.10.1",
     "postcss": "^8.5.3",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-fast-marquee": "^1.6.5",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.9",
