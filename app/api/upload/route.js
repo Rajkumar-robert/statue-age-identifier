@@ -17,14 +17,13 @@ export async function POST(request) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
 
-    
     const result = await pinata.upload.file(file);
-    // const url = await pinata.gateways.createSignedURL({
-    //   cid: result.cid,
-    //   expires:500000,
-    // })
-    // console.log("URL", url);
-    return NextResponse.json({url:"url", status: 200 });
+    const url = await pinata.gateways.createSignedURL({
+      cid: result.cid,
+      expires:50000
+    })
+  
+    return NextResponse.json(url,{status: 200 });
   } catch (error) {
     console.error(error);
     return NextResponse.json(

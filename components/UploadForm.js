@@ -18,7 +18,7 @@ export default function UploadForm() {
     const objectUrl = URL.createObjectURL(file);
     console.log(objectUrl);
     setPreviewUrl(objectUrl);
-    setSelectedFile(file); // Store file but do not upload yet
+    setSelectedFile(file); 
   };
 
   // Handle upload when button is clicked
@@ -44,7 +44,7 @@ export default function UploadForm() {
 
       console.log(response);
       const signedUrl = await response.json();
-      // setPreviewUrl(signedUrl); // Set preview to uploaded image URL
+      setPreviewUrl(signedUrl); // Set preview to uploaded image URL
       console.log(previewUrl);
       alert("Image uploaded successfully!");
     } catch (error) {
@@ -67,12 +67,12 @@ export default function UploadForm() {
       />
 
       {previewUrl && (
-        <div className="relative w-40 h-40 mb-4">
+        <div className="relative w-40 h-fit mb-4">
           <img
             src={previewUrl}
             alt="Preview"
             layout="fill"
-            objectFit="cover"
+          
             className="rounded-md"
           />
         </div>

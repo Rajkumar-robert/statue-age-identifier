@@ -3,7 +3,5 @@ import { PinataSDK } from "pinata";
 
 export const pinata = new PinataSDK({
     pinataJwt:`${process.env.NEXT_PUBLIC_PINATA_JWT}`,
-    pinataApiKey: "harlequin-giant-panda-964.mypinata.cloud",
+    pinataGateway: `${process.env.NEXT_PUBLIC_GATEWAY_URL}`,
 });
-
-console.log("jwt", process.env.NEXT_PUBLIC_PINATA_JWT);
