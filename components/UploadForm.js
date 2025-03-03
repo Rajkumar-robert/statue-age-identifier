@@ -61,7 +61,7 @@ export default function UploadForm() {
   };
 
   return (
-    <div className="flex flex-col items-center p-6 border-1 border-black rounded-md z-50 backdrop-blur-2xl bg-white bg-opacity-50">
+    <div className="flex flex-col items-center p-6 border-1 border-black rounded-md z-50 backdrop-blur-2xl bg-white bg-opacity-50 mx-2">
       <input
         ref={fileInputRef}
         type="file"
