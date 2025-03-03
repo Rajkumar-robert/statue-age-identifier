@@ -9,6 +9,7 @@ export default function UploadForm() {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isUploadSuccess, setIsUploadSuccess] = useState(false);
+  const [imageCID, setImageCID] = useState(null);
 
   // Handle file selection
   const handleFileChange = (e) => {
@@ -45,11 +46,14 @@ export default function UploadForm() {
       }
 
       console.log(response);
-      const signedUrl = await response.json();
+      const {signedUrl,cid} = await response.json();
       if(response.status === 200) {
         setIsUploadSuccess(true);
       }
+      console.log(signedUrl);
+      console.log(cid);
       setPreviewUrl(signedUrl); // Set preview to uploaded image URL
+      setImageCID(cid);
       console.log(previewUrl);
       alert("Image uploaded successfully!");
     } catch (error) {
@@ -87,7 +91,7 @@ export default function UploadForm() {
         disabled={isUploading || !selectedFile}
         className={`px-4 py-2 text-white rounded-lg font-mono ${
           isUploading || !selectedFile
-            ? "bg-blue-500 cursor-not-allowed"
+            ? "bg-blue-500"
             : "bg-green-500 hover:bg-green-600"
         }`}
       >
@@ -97,7 +101,7 @@ export default function UploadForm() {
         isUploadSuccess && (
           <div className="px-4 py-2 text-white rounded-lg bg-green-500 hover:bg-green-600 mt-2">
             <Link 
-            href="/details"
+            href={`/details/${imageCID}`}
             className="text-white- font-mono">
             Identify Age and Era
             </Link>

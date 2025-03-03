@@ -22,8 +22,10 @@ export async function POST(request) {
       cid: result.cid,
       expires:50000
     })
+
+    const { cid } = result;
   
-    return NextResponse.json(url,{status: 200 });
+    return NextResponse.json({signedUrl:url,cid:cid,status: 200 });
   } catch (error) {
     console.error(error);
     return NextResponse.json(

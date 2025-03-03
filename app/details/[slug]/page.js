@@ -1,19 +1,49 @@
 "use client";
 import Image from "next/image";
-import React from "react";
+import { usePathname } from "next/navigation";
+import React, { useEffect, useState } from "react";
 
 const Page = () => {
+    const imageCID = usePathname().split("/")[2];
+    const [imgUrl,setImgUrl] = useState(null)
+    useEffect(() => {
+      const fetchImage = async () => {
+        try {
+          const response = await fetch('/api/getImage', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id: imageCID })
+          });
+          const data = await response.json();
+          console.log(data)
+          setImgUrl(data.imgUrl);
+        } catch (error) {
+          console.error('Error fetching image:', error);
+        }
+      };
+
+      if (imageCID) {
+        fetchImage();
+      }
+    }, [imageCID]);
+
+
   return (
     <div className="flex h-[88vh] w-full p-4 gap-4">
       {/* Left Section (Uploaded Image) */}
       <div className="w-1/3 bg-gray-200 flex items-center justify-center p-4 rounded-lg border-1 border-black">
-        <Image
-          src="/statue_images/6.png"
+      {
+        imgUrl?<Image
+          src={imgUrl}
           alt="Uploaded Statue"
           width={500}
           height={600}
           className="w-full h-full object-cover rounded-lg"
-        />
+        />:
+        <div className="loader w-3xl h-14"></div>
+      }  
       </div>
 
       {/* Right Section (Remaining 70%) */}
