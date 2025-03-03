@@ -2,6 +2,7 @@ import { Geist, Geist_Mono, IBM_Plex_Mono, Mona_Sans, Outfit } from "next/font/g
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Chatbot from "@/components/Chatbot";
 
 
 const outfit = Outfit({
@@ -27,6 +28,7 @@ export default function RootLayout({ children }) {
       >
         <Navbar/>
         {children}
+        <Chatbot/>
         <Footer/>
       </body>
     </html>
