@@ -8,10 +8,10 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className=" font-mono bg-white text-black px-6 py-4 border-b border-black-200">
+    <div className="  bg-white text-black px-6 py-4 border-b border-black-200">
       <div className="container mx-auto flex justify-between items-center">
         {/* Logo */}
-        <Link href="/" className=" font-bold">
+        <Link href="/" className=" font-bold flex items-center space-x-2">
           <Image
             src="/dank_logo.jpg"
             alt="Logo"
@@ -19,8 +19,10 @@ export default function Navbar() {
             height={40}
             className="cursor-pointer"
           />
+          <h1>Statue Age Detector</h1>
+          
         </Link>
-
+  
         {/* Desktop Menu */}
         <ul className="hidden md:flex space-x-6">
           <NavItem href="/dashbord" Icon={LayoutDashboard} text="Dashboard" />
@@ -54,7 +56,7 @@ export default function Navbar() {
 // Reusable NavItem Component
 const NavItem = ({ href, Icon, text }) => (
   <li>
-    <Link href={href} className="flex items-center space-x-2 hover:text-gray-600">
+    <Link href={href} className="flex font-mono items-center space-x-2 hover:text-gray-600">
       <Icon size={18} className="text-black" />
       <span>{text}</span>
     </Link>

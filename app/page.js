@@ -7,7 +7,7 @@ export default function Home() {
   return (
     <div className="relative w-full h-[90vh] flex flex-col items-center justify-center bg-gray-100 overflow-hidden">
   
-      <div className="absolute top-28 flex flex-col items-center justify-center">
+      <div className="absolute top-[100px] flex flex-col items-center justify-center">
         <h1 className=" text-8xl font-extrabold text-black opacity-90 select-none">
         Unveiling the Past
         </h1>
