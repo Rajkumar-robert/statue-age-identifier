@@ -61,7 +61,7 @@ export default function UploadForm() {
   };
 
   return (
-    <div className="flex flex-col items-center p-6 border-1 border-black rounded-md">
+    <div className="flex flex-col items-center p-6 border-1 border-black rounded-md z-50 backdrop-blur-2xl bg-white bg-opacity-50">
       <input
         ref={fileInputRef}
         type="file"
@@ -88,14 +88,14 @@ export default function UploadForm() {
         className={`px-4 py-2 text-white rounded-lg font-mono ${
           isUploading || !selectedFile
             ? "bg-blue-500 cursor-not-allowed"
-            : "bg-green-500 hover:bg-green-700"
+            : "bg-green-500 hover:bg-green-600"
         }`}
       >
         {isUploading ? "Uploading..." : "Upload Image"}
       </button>
       {
-        1 && (
-          <div className="px-4 py-2 text-white rounded-lg bg-green-400 hover:bg-green-500 mt-2">
+        isUploadSuccess && (
+          <div className="px-4 py-2 text-white rounded-lg bg-green-500 hover:bg-green-600 mt-2">
             <Link 
             href="/details"
             className="text-white- font-mono">

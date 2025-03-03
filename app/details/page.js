@@ -32,7 +32,7 @@ const Page = () => {
         <div className="h-2/3 px-10 font-mono bg-gray-500 flex flex-col items-center justify-center rounded-lg border-1 border-black p-4 text-white text-lg">
           <p>
             This statue dates back approximately 100-110 years, belonging to the 
-            Ancient Roman era. It showcases intricate stonework, characteristic of 
+            Vedic era. It showcases intricate stonework, characteristic of 
             the period, with detailed carvings reflecting the cultural and artistic 
             influences of the time.
           </p>

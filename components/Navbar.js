@@ -11,7 +11,7 @@ export default function Navbar() {
     <div className="  bg-white text-black px-6 py-4 border-b border-black-200">
       <div className="container mx-auto flex justify-between items-center">
         {/* Logo */}
-        <Link href="/" className=" font-bold flex items-center space-x-2">
+        <Link href="/" className="  flex items-center space-x-2">
           <Image
             src="/dank_logo.jpg"
             alt="Logo"
@@ -19,7 +19,7 @@ export default function Navbar() {
             height={40}
             className="cursor-pointer"
           />
-          <h1>Statue Age Detector</h1>
+          <h1 className="font-bold  text-2xl">S.A.D</h1>
           
         </Link>
   
