@@ -4,6 +4,37 @@ import { MessageCircle, Sparkles } from "lucide-react";
 
 const Chatbot = () => {
   const [chatOpen, setChatOpen] = useState(false);
+  const [messages, setMessages] = useState([
+    { sender: "bot", text: "👋 Hello! How can I assist you today?" },
+  ]);
+  const [input, setInput] = useState("");
+
+  async function sendMessage() {
+    if (!input.trim()) return;
+
+    const userMessage = { sender: "user", text: input };
+    setMessages((prev) => [...prev, userMessage]);
+
+    try {
+      const response = await fetch("https://chilly-badgers-grow.loca.lt", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message: input }),
+      });
+
+      const data = await response.json();
+      const botMessage = { sender: "bot", text: data.reply };
+
+      setMessages((prev) => [...prev, botMessage]);
+    } catch (error) {
+      console.error("Chatbot error:", error);
+      setMessages((prev) => [...prev, { sender: "bot", text: "⚠️ Error fetching response." }]);
+    }
+
+    setInput("");
+  }
 
   return (
     <div className="relative w-[] h-full z-50">
@@ -17,21 +48,47 @@ const Chatbot = () => {
 
       {/* Chat UI Panel */}
       {chatOpen && (
-        <div className="fixed bottom-16 right-6 w-[300px] h-[400px] bg-white shadow-lg rounded-lg p-4 flex flex-col">
-          <div className="flex justify-between items-center border-b pb-2 mb-2">
+        <div className="fixed bottom-16 right-6 w-[320px] h-[400px] bg-white shadow-lg rounded-lg flex flex-col border border-gray-200">
+          {/* Header */}
+          <div className="flex justify-between items-center bg-blue-500 text-white p-3 rounded-t-lg">
             <h2 className="text-lg font-semibold">AI Chatbot</h2>
-            <button onClick={() => setChatOpen(false)} className="text-gray-500 hover:text-gray-700">
+            <button onClick={() => setChatOpen(false)} className="text-white hover:text-gray-200">
               ✕
             </button>
           </div>
-          <div className="flex-1 overflow-y-auto p-2 text-sm text-gray-700">
-            <p>👋 Hello! How can I assist you today?</p>
+
+          {/* Chat Messages */}
+          <div className="flex-1 overflow-y-auto p-3 space-y-2 text-sm text-gray-800">
+            {messages.map((msg, index) => (
+              <div
+                key={index}
+                className={`p-2 rounded-lg max-w-[80%] ${
+                  msg.sender === "user"
+                    ? "bg-blue-500 text-white self-end ml-auto"
+                    : "bg-gray-300 text-black self-start"
+                }`}
+              >
+                {msg.text}
+              </div>
+            ))}
           </div>
-          <input
-            type="text"
-            placeholder="Type a message..."
-            className="w-full p-2 border rounded-md text-sm"
-          />
+
+          {/* Input Box */}
+          <div className="p-3 border-t flex">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              className="flex-1 p-2 border border-gray-300 rounded-md text-sm focus:outline-none"
+              placeholder="Type a message..."
+            />
+            <button
+              onClick={sendMessage}
+              className="ml-2 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition"
+            >
+              Send
+            </button>
+          </div>
         </div>
       )}
     </div>
