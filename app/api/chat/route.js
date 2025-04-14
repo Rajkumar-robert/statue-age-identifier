@@ -7,7 +7,7 @@ export async function POST(req) {
     const { query } = await req.json(); // Extract query from the request body
 
     // Call the FastAPI backend (replace with your own endpoint)
-    const response = await axios.post('http://127.0.0.1:8000/query', {
+    const response = await axios.post('http://127.0.0.1:8001/query', {
       query: query,
     });
 
