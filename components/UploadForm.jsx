@@ -1,114 +1,119 @@
 "use client";
 import { useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function UploadForm() {
   const fileInputRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [isUploadSuccess, setIsUploadSuccess] = useState(false);
-  const [imageCID, setImageCID] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Handle file selection
+  const [metadata, setMetadata] = useState({
+    main_material: "stone",
+    context: "theory",
+    material_and_technique: "drilled",
+    geographic_context: "france",
+    cultural_context: "western",
+    object_type: "relief",
+  });
+
+  const router = useRouter();
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-
     if (!file) return;
 
-    // Generate preview URL
-    const objectUrl = URL.createObjectURL(file);
-    console.log(objectUrl);
-    setPreviewUrl(objectUrl);
-    setSelectedFile(file); 
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
   };
 
-  // Handle upload when button is clicked
-  const handleUpload = async () => {
-    if (!selectedFile) {
-      alert("Please select a file first.");
-      return;
-    }
+  const handleMetadataChange = (e) => {
+    const { name, value } = e.target;
+    setMetadata((prev) => ({ ...prev, [name]: value }));
+  };
 
-    setIsUploading(true);
-    const data = new FormData();
-    data.set("file", selectedFile);
+  const handleSubmit = async () => {
+    if (!selectedFile) return alert("Image is required.");
+    if (!metadata.main_material.trim()) return alert("Main material is required.");
+
+    setIsSubmitting(true);
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+    for (const key in metadata) {
+      formData.append(key, metadata[key]);
+    }
 
     try {
-      const response = await fetch("/api/upload", {
+      const res = await fetch("http://127.0.0.1:8000/predict", {
         method: "POST",
-        body: data,
+        body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to upload image");
-      }
+      if (!res.ok) throw new Error("Prediction failed");
+      const result = await res.json();
 
-      console.log(response);
-      const {signedUrl,cid} = await response.json();
-      if(response.status === 200) {
-        setIsUploadSuccess(true);
-      }
-      console.log(signedUrl);
-      console.log(cid);
-      setPreviewUrl(signedUrl); // Set preview to uploaded image URL
-      setImageCID(cid);
-      console.log(previewUrl);
-      alert("Image uploaded successfully!");
+      // Save to localStorage or pass through URL (not recommended for large objects)
+      localStorage.setItem("prediction", JSON.stringify(result));
+      localStorage.setItem("previewUrl", previewUrl);
+
+      router.push("/details");
     } catch (error) {
-      console.error("Upload error:", error);
-      alert("Image upload failed.");
+      console.error("Prediction Error:", error);
+      alert("Prediction failed.");
     }
 
-    setIsUploading(false);
+    setIsSubmitting(false);
   };
 
   return (
-    <div className="flex flex-col items-center p-6 border-1 border-black rounded-md z-50 backdrop-blur-2xl bg-white bg-opacity-50 mx-2">
+    <div className="flex flex-col mt-16 items-center p-6 border border-black rounded-md bg-white bg-opacity-80 mx-2">
       <input
         ref={fileInputRef}
         type="file"
-        disabled={isUploading}
         onChange={handleFileChange}
         className="mb-4 text-gray-700"
         accept="image/*"
+        required
       />
 
       {previewUrl && (
-        <div className="relative w-64 h-86 mb-4">
+        <div className="relative w-64 h-64 mb-4">
           <Image
             src={previewUrl}
             alt="Preview"
-            className="w-full h-full object-cover rounded-md"
+            className="object-cover rounded-md"
             fill
           />
         </div>
       )}
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full max-w-lg">
+        {Object.keys(metadata).map((key) => (
+          <input
+            key={key}
+            type="text"
+            name={key}
+            placeholder={key.replace(/_/g, " ")}
+            value={metadata[key]}
+            onChange={handleMetadataChange}
+            className={`p-2 border rounded bg-white text-black placeholder:text-gray-600 ${
+              key === "main_material" ? "border-red-500" : ""
+            }`}
+            required={key === "main_material"}
+          />
+        ))}
+      </div>
+
       <button
-        onClick={handleUpload}
-        disabled={isUploading || !selectedFile}
-        className={`px-4 py-2 text-white rounded-lg font-mono ${
-          isUploading || !selectedFile
-            ? "bg-blue-500"
-            : "bg-green-500 hover:bg-green-600"
+        onClick={handleSubmit}
+        disabled={isSubmitting}
+        className={`mt-4 px-4 py-2 text-white rounded-lg font-mono ${
+          isSubmitting ? "bg-blue-500" : "bg-green-500 hover:bg-green-600"
         }`}
       >
-        {isUploading ? "Uploading..." : "Upload Image"}
+        {isSubmitting ? "Submitting..." : "Submit for Prediction"}
       </button>
-      {
-        isUploadSuccess && (
-          <div className="px-4 py-2 text-white rounded-lg bg-green-500 hover:bg-green-600 mt-2">
-            <Link 
-            href={`/details/${imageCID}`}
-            className="text-white- font-mono">
-            Identify Age and Era
-            </Link>
-           
-          </div>
-        )
-      }
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { MessageCircle, Sparkles } from "lucide-react";
+import axios from "axios";
 
 const Chatbot = () => {
   const [chatOpen, setChatOpen] = useState(false);
@@ -16,28 +17,24 @@ const Chatbot = () => {
     setMessages((prev) => [...prev, userMessage]);
 
     try {
-      const response = await fetch("https://chilly-badgers-grow.loca.lt", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ message: input }),
-      });
-
-      const data = await response.json();
-      const botMessage = { sender: "bot", text: data.reply };
+      // Make a request to the Next.js API route
+      const response = await axios.post("/api/chat", { query: input });
+      const botMessage = { sender: "bot", text: response.data.summary };
 
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
       console.error("Chatbot error:", error);
-      setMessages((prev) => [...prev, { sender: "bot", text: "⚠️ Error fetching response." }]);
+      setMessages((prev) => [
+        ...prev,
+        { sender: "bot", text: "⚠️ Error fetching response." },
+      ]);
     }
 
     setInput("");
   }
 
   return (
-    <div className="relative w-[] h-full z-50">
+    <div className="relative w-full h-full z-50">
       {/* Chatbot Icon */}
       <button
         onClick={() => setChatOpen(!chatOpen)}

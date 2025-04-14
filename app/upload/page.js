@@ -9,12 +9,12 @@ export default function UploadPage() {
         Upload a Statue Image
       </h1>
       <UploadForm />
-      <div className="absolute w-full h-[90%] z-0 transform -translate-x-50 -bottom-20 scale-75 overflow-hidden">
+      <div className="absolute w-full h-[90%] z-0 transform -translate-x-50 -bottom-20 scale-75 overflow-hidden pointer-events-none">
       <Image src="/sisyphus-bg.png"
       alt="Sisyphus"
       width={1080}
       height={920}
-      className="w-full h-full grayscale contrast-[500] opacity-80 " />
+      className="w-full h-full grayscale contrast-[500] opacity-20 " />
       </div>
       
     </div>
