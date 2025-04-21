@@ -1,0 +1,28 @@
+# Core Framework
+fastapi==0.110.0
+uvicorn==0.29.0
+
+# Model & ML Libraries
+torch==2.1.2
+numpy==1.26.4
+scikit-learn==1.4.1.post1
+transformers==4.39.3
+sentence-transformers==2.2.2
+faiss-cpu==1.7.4
+
+# NLP
+nltk==3.8.1
+rank-bm25==0.2.2
+
+# Image Processing
+Pillow==10.2.0
+torchvision==0.16.2
+
+# Web Requests (for future integrations)
+requests==2.31.0
+
+# File Handling
+python-multipart==0.0.9  # required for file uploads in FastAPI
+
+# Pydantic (FastAPI dependency, included for completeness)
+pydantic==2.6.4

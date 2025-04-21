@@ -11,11 +11,14 @@ export default function UploadForm() {
 
   const [metadata, setMetadata] = useState({
     main_material: "stone",
-    context: "theory",
-    material_and_technique: "drilled",
-    geographic_context: "france",
-    cultural_context: "western",
-    object_type: "relief",
+    context: "",
+    material_and_technique: "",
+    geographic_context: "",
+    cultural_context: "",
+    gallery_name: "",
+    object_type: "",
+    museum_name: "",
+    classification: "",
   });
 
   const router = useRouter();
@@ -33,6 +36,18 @@ export default function UploadForm() {
     setMetadata((prev) => ({ ...prev, [name]: value }));
   };
 
+  const metadataKeyMap = {
+    main_material: "main_material",
+    context: "context",
+    material_and_technique: "material_and_technique",
+    geographic_context: "geographic_context",
+    cultural_context: "cultural_context",
+    gallery_name: "gallery_name",
+    object_type: "object_type",
+    museum_name: "museum_name",
+    classification: "classification",
+  };
+
   const handleSubmit = async () => {
     if (!selectedFile) return alert("Image is required.");
     if (!metadata.main_material.trim()) return alert("Main material is required.");
@@ -40,8 +55,13 @@ export default function UploadForm() {
     setIsSubmitting(true);
     const formData = new FormData();
     formData.append("file", selectedFile);
+    formData.append("main_material", metadata.main_material);
+
+    // Append optional fields only if filled
     for (const key in metadata) {
-      formData.append(key, metadata[key]);
+      if (key !== "main_material" && metadata[key].trim()) {
+        formData.append(key, metadata[key]);
+      }
     }
 
     try {
@@ -53,7 +73,6 @@ export default function UploadForm() {
       if (!res.ok) throw new Error("Prediction failed");
       const result = await res.json();
 
-      // Save to localStorage or pass through URL (not recommended for large objects)
       localStorage.setItem("prediction", JSON.stringify(result));
       localStorage.setItem("previewUrl", previewUrl);
 
