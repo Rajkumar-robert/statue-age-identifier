@@ -1,5 +1,8 @@
 import io
 import traceback
+import os
+import torchvision.models as models
+from torchvision.models import Inception_V3_Weights
 from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -9,14 +12,16 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torchvision import transforms
+from torchvision.models import inception_v3, Inception_V3_Weights
 import joblib
-import os
-from fusion_model import FusionModel  # Ensure this file exists and has the model class
+from fusion_model import FusionModel
+from torchvision.models import Inception_V3_Weights
+
 
 # Initialize FastAPI app
 app = FastAPI()
 
-# CORS middleware for local frontend testing
+# CORS middleware for frontend communication
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -25,13 +30,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load encoders and scaler
-label_encoders = {}
+# Paths
 encoder_path = "label_encoders"
 scaler_path = "scaler.pkl"
-model_path = "fusion_model.pth"
+model_path = "fusion_model_1.pth"
 
 # Load label encoders
+label_encoders = {}
 if os.path.exists(encoder_path):
     for file in os.listdir(encoder_path):
         if file.endswith(".pkl"):
@@ -43,31 +48,40 @@ if not os.path.exists(scaler_path):
     raise FileNotFoundError(f"Scaler file not found at {scaler_path}")
 scaler = joblib.load(scaler_path)
 
-# Define image transform
+# Define metadata fields expected
+metadata_fields = ['Main Material', 'Context', 'Material & Technique', 'Geographic Context',
+                   'Cultural Context', 'Gallery Name', 'Object Type', 'Museum Name', 'Classification']
+
+# Image preprocessing pipeline
 transform = transforms.Compose([
     transforms.Resize((299, 299)),
     transforms.ToTensor(),
-    transforms.Normalize([0.5]*3, [0.5]*3),
+    transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
 ])
 
-# Define and load the model
+# Load image feature extractor (InceptionV3)
+weights = Inception_V3_Weights.DEFAULT
+inception = models.inception_v3(weights=Inception_V3_Weights.DEFAULT, aux_logits=True)
+inception.fc = nn.Identity()
+inception.eval()
+for param in inception.parameters():
+    param.requires_grad = False
+
+# Feature extraction function
+def extract_image_features(image: Image.Image) -> torch.Tensor:
+    image = transform(image).unsqueeze(0)
+    with torch.no_grad():
+        features = inception(image)
+    return features
+
+# Load trained fusion model
 try:
-    model = FusionModel(
-        img_dim=2048,       # Feature size from InceptionV3
-        meta_dim=9,         # Number of metadata features
-        hidden_dim=512,     # Hidden layer size (tune if needed)
-        num_classes=9       # Number of historical periods
-    )
-    state_dict = torch.load("fusion_model.pth", map_location=torch.device("cpu"))
+    model = FusionModel(num_meta_features=9, num_classes=9)
+    state_dict = torch.load(model_path, map_location=torch.device("cpu"))
     model.load_state_dict(state_dict)
     model.eval()
 except Exception as e:
     raise RuntimeError(f"Failed to load model: {e}")
-
-
-# Define metadata fields expected
-metadata_fields = ['Main Material', 'Context', 'Material & Technique', 'Geographic Context',
-                   'Cultural Context', 'Gallery Name', 'Object Type', 'Museum Name', 'Classification']
 
 @app.post("/predict")
 async def predict(
@@ -83,18 +97,14 @@ async def predict(
     classification: Optional[str] = Form(None)
 ):
     try:
-        # Validate file
         if image.content_type not in ["image/jpeg", "image/png", "image/jpg"]:
             raise HTTPException(status_code=400, detail="Invalid image format.")
 
         image_bytes = await image.read()
         img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-        img_tensor = transform(img).unsqueeze(0)
+        img_features = extract_image_features(img)
 
-        # Dummy image features if needed — replace with actual CNN extractor if applicable
-        img_features = torch.randn(1, 2048)  # Replace with your Inception feature extractor
-
-        # Process metadata
+        # Prepare metadata
         input_metadata = [
             main_material, context, material_technique, geographic_context,
             cultural_context, gallery_name, object_type, museum_name, classification
@@ -104,48 +114,40 @@ async def predict(
         for col_name, val in zip(metadata_fields, input_metadata):
             le = label_encoders.get(col_name)
             if le is None or val is None:
-                encoded.append(0)  # Use 0 for unknown or missing
+                encoded.append(0)
             else:
                 try:
                     encoded.append(le.transform([val])[0])
                 except:
                     encoded.append(0)
 
-        # Scale metadata
         meta_np = scaler.transform([encoded])
         meta_tensor = torch.tensor(meta_np, dtype=torch.float32)
 
         # Predict
         with torch.no_grad():
-            output = model(img_features, meta_tensor)
-            predicted_year = output[0].item()
+            year_output, class_output = model(img_features, meta_tensor)
+            predicted_year = year_output.item()
             estimated_age = 2025 - predicted_year
+            predicted_class = class_output.argmax(dim=1).item()
 
-        # Classify period based on predicted year
-        def classify_period(year):
-            if year < -3000:
-                return "Prehistoric India"
-            elif -3000 <= year < -600:
-                return "Ancient Civilizations"
-            elif -600 <= year < -320:
-                return "Mahajanapadas & Early Empires"
-            elif -320 <= year < 550:
-                return "Classical India"
-            elif 550 <= year < 1206:
-                return "Post-Gupta to Early Medieval"
-            elif 1206 <= year < 1526:
-                return "Delhi Sultanate"
-            elif 1526 <= year < 1857:
-                return "Mughal Empire & Regional Powers"
-            elif 1857 <= year < 1947:
-                return "British Period"
-            else:
-                return "Independent India"
+        # Map class index to historical period
+        period_labels = [
+            "Prehistoric India",
+            "Ancient Civilizations",
+            "Mahajanapadas & Early Empires",
+            "Classical India",
+            "Post-Gupta to Early Medieval",
+            "Delhi Sultanate",
+            "Mughal Empire & Regional Powers",
+            "British Period",
+            "Independent India"
+        ]
 
         return {
             "predicted_year": round(predicted_year),
             "estimated_age": round(estimated_age),
-            "period": classify_period(predicted_year)
+            "period": period_labels[predicted_class]
         }
 
     except Exception as e:

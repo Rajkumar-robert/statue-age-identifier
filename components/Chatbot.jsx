@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { MessageCircle, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import axios from "axios";
 
 const Chatbot = () => {
@@ -17,10 +17,9 @@ const Chatbot = () => {
     setMessages((prev) => [...prev, userMessage]);
 
     try {
-      // Make a request to the Next.js API route
       const response = await axios.post("/api/chat", { query: input });
-      const botMessage = { sender: "bot", text: response.data.summary };
-
+      const reranked = response.data.reranked_passages?.join("\n\n") || "⚠️ No relevant information found.";
+      const botMessage = { sender: "bot", text: reranked };
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
       console.error("Chatbot error:", error);
